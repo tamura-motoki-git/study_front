@@ -1,4 +1,4 @@
-import { Dispatch } from 'redux';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 
 export type PostalCodeState = {
   address: string;
@@ -12,45 +12,49 @@ const initialState: PostalCodeState = {
   error: null,
 };
 
-type Action =
-  | { type: 'FETCH_ADDRESS_START' }
-  | { type: 'FETCH_ADDRESS_SUCCESS'; payload: string }
-  | { type: 'FETCH_ADDRESS_FAILURE'; payload: string };
-
-export const postalCodeReducer = (
-  state = initialState,
-  action: Action
-): PostalCodeState => {
-  switch (action.type) {
-    case 'FETCH_ADDRESS_START':
-      return { ...state, loading: true, error: null };
-    case 'FETCH_ADDRESS_SUCCESS':
-      return { ...state, loading: false, address: action.payload };
-    case 'FETCH_ADDRESS_FAILURE':
-      return { ...state, loading: false, error: action.payload };
-    default:
-      return state;
-  }
-};
-
-export const fetchAddress =
-  (postalCode: string) => async (dispatch: Dispatch<Action>) => {
-    dispatch({ type: 'FETCH_ADDRESS_START' });
+// 非同期アクション（Thunk）を作成
+export const fetchAddress = createAsyncThunk(
+  'postalCode/fetchAddress',
+  async (postalCode: string, { rejectWithValue }) => {
     try {
       const response = await fetch(
         `https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postalCode}`
       );
       const data = await response.json();
       if (data.results) {
-        const address = `${data.results[0].address1} ${data.results[0].address2} ${data.results[0].address3}`;
-        dispatch({ type: 'FETCH_ADDRESS_SUCCESS', payload: address });
+        return `${data.results[0].address1} ${data.results[0].address2} ${data.results[0].address3}`;
       } else {
-        dispatch({
-          type: 'FETCH_ADDRESS_FAILURE',
-          payload: 'Address not found',
-        });
+        return rejectWithValue('Address not found');
       }
     } catch (error: any) {
-      dispatch({ type: 'FETCH_ADDRESS_FAILURE', payload: error.message });
+      return rejectWithValue(error.message);
     }
-  };
+  }
+);
+
+// Sliceの作成
+const postalCodeSlice = createSlice({
+  name: 'postalCode',
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchAddress.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchAddress.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.loading = false;
+          state.address = action.payload;
+        }
+      )
+      .addCase(fetchAddress.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
+});
+
+export default postalCodeSlice.reducer;
