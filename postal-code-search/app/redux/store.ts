@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import postalCodeReducer from './postalCodeSlice';
+import { postalCodeReducer } from './postalCodeSlice';
 
 export const store = configureStore({
   reducer: {

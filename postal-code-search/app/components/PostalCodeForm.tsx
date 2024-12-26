@@ -10,7 +10,7 @@ type FormInputs = {
   postalCode: string;
 };
 
-const PostalCodeForm: React.FC = () => {
+export const PostalCodeForm: React.FC = () => {
   const { register, handleSubmit, reset } = useForm<FormInputs>();
   const dispatch = useDispatch<AppDispatch>();
   const { address, loading, error } = useSelector(
@@ -66,5 +66,3 @@ const PostalCodeForm: React.FC = () => {
     </div>
   );
 };
-
-export default PostalCodeForm;

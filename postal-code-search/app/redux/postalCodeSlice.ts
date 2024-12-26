@@ -1,10 +1,10 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-export type PostalCodeState = {
+export interface PostalCodeState {
   address: string;
   loading: boolean;
   error: string | null;
-};
+}
 
 const initialState: PostalCodeState = {
   address: '',
@@ -12,7 +12,6 @@ const initialState: PostalCodeState = {
   error: null,
 };
 
-// 非同期アクション（Thunk）を作成
 export const fetchAddress = createAsyncThunk(
   'postalCode/fetchAddress',
   async (postalCode: string, { rejectWithValue }) => {
@@ -22,9 +21,10 @@ export const fetchAddress = createAsyncThunk(
       );
       const data = await response.json();
       if (data.results) {
-        return `${data.results[0].address1} ${data.results[0].address2} ${data.results[0].address3}`;
+        const address = `${data.results[0].address1} ${data.results[0].address2} ${data.results[0].address3}`;
+        return address;
       } else {
-        return rejectWithValue('Address not found');
+        return rejectWithValue('該当する住所が見つかりませんでした');
       }
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -32,8 +32,7 @@ export const fetchAddress = createAsyncThunk(
   }
 );
 
-// Sliceの作成
-const postalCodeSlice = createSlice({
+export const postalCodeSlice = createSlice({
   name: 'postalCode',
   initialState,
   reducers: {},
@@ -43,13 +42,10 @@ const postalCodeSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        fetchAddress.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          state.loading = false;
-          state.address = action.payload;
-        }
-      )
+      .addCase(fetchAddress.fulfilled, (state, action) => {
+        state.loading = false;
+        state.address = action.payload;
+      })
       .addCase(fetchAddress.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -57,4 +53,4 @@ const postalCodeSlice = createSlice({
   },
 });
 
-export default postalCodeSlice.reducer;
+export const postalCodeReducer = postalCodeSlice.reducer;
