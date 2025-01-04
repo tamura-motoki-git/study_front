@@ -11,5 +11,3 @@ interface ReduxProviderProps {
 export const ReduxProvider = ({ children }: ReduxProviderProps) => (
   <Provider store={store}>{children}</Provider>
 );
-
-a;

@@ -66,5 +66,3 @@ export const PostalCodeForm: React.FC = () => {
     </div>
   );
 };
-
-sample;
