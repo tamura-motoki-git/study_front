@@ -1,0 +1,93 @@
+openapi: 3.0.0
+info:
+  title: 郵便番号住所検索API
+  description: ZipCloud APIを利用して、郵便番号から住所情報を取得するAPI。
+  version: 1.0.0
+paths:
+  /zipcloud.ibsnet.co.jp/api/search:
+    get:
+      summary: 郵便番号で住所を取得
+      description: >
+        このエンドポイントでは、郵便番号を指定して住所情報を取得します。ZipCloud APIを使用します。
+      parameters:
+        - name: zipcode
+          in: query
+          description: 検索する郵便番号（日本の7桁の数字）。
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{7}$'
+      responses:
+        '200':
+          description: 住所の取得に成功しました
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    nullable: true
+                    example: null
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        address1:
+                          type: string
+                          example: '東京都'
+                        address2:
+                          type: string
+                          example: '千代田区'
+                        address3:
+                          type: string
+                          example: '千代田'
+                        kana1:
+                          type: string
+                          example: 'ﾄｳｷｮｳﾄ'
+                        kana2:
+                          type: string
+                          example: 'ﾁﾖﾀﾞｸ'
+                        kana3:
+                          type: string
+                          example: 'ﾁﾖﾀﾞ'
+                        prefcode:
+                          type: string
+                          example: '13'
+                        zipcode:
+                          type: string
+                          example: '1000001'
+                  status:
+                    type: integer
+                    example: 200
+        '400':
+          description: 無効な郵便番号形式
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: '無効な郵便番号形式です。'
+        '404':
+          description: 該当する住所が見つかりません
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: '指定された郵便番号に該当する住所が見つかりません。'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'リクエスト処理中にエラーが発生しました。'
